@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,7 +25,7 @@
             overflow-x: hidden;
         }
 
-        /* Sfondo cyberpunk */
+        /* Cyberpunk background */
         body::before {
             content: '';
             position: fixed;
@@ -98,7 +98,7 @@
             text-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
         }
 
-        /* Pannelli */
+        /* Panels */
         .panel {
             display: none;
             background: rgba(8, 15, 25, 0.8);
@@ -217,7 +217,7 @@
             color: #00a6ff;
         }
 
-        /* Button */
+        /* Button - MODIFIED FOR INSTANT DOWNLOAD */
         .decompile-btn {
             width: 100%;
             background: linear-gradient(135deg, #001c3d, #002856);
@@ -267,7 +267,7 @@
             color: #00a6ff;
         }
 
-        /* Credit section - COMPLETAMENTE RISCRITTA */
+        /* Credit section - UPDATED */
         .credit-card {
             display: flex;
             flex-direction: column;
@@ -319,15 +319,23 @@
             font-size: 32px;
         }
 
+        /* NEW: Developer text instead of Ctrl+S */
         .credit-text {
-            font-size: 22px;
-            color: #b0c4de;
-            margin: 15px 0;
-            font-style: italic;
+            font-size: 28px;
+            color: #00a6ff;
+            margin: 20px 0;
+            font-weight: 600;
             background: rgba(0, 50, 100, 0.3);
-            padding: 15px 30px;
-            border-radius: 40px;
-            border: 1px solid rgba(0, 170, 255, 0.2);
+            padding: 15px 40px;
+            border-radius: 50px;
+            border: 1px solid #00a6ff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .credit-text i {
+            margin-right: 10px;
+            color: #00a6ff;
         }
 
         .credit-social {
@@ -359,6 +367,7 @@
             .profile-image { width: 140px; height: 140px; }
             .credit-name { font-size: 36px; }
             .credit-handle { font-size: 22px; }
+            .credit-text { font-size: 22px; padding: 12px 25px; }
         }
     </style>
 </head>
@@ -380,52 +389,54 @@
                 <i class="fas fa-skull logo-icon"></i>
                 <div>
                     <h1>VOID <span>DECOMPILER</span></h1>
-                    <div class="sub">ESTRAZIONE MAPPE ROBLOX</div>
+                    <div class="sub">ROBLOX MAP EXTRACTOR</div>
                 </div>
             </div>
 
             <div class="input-group">
-                <label><i class="fas fa-cube"></i> PLACE ID (obbligatorio)</label>
+                <label><i class="fas fa-cube"></i> PLACE ID (required)</label>
                 <div class="input-wrapper">
                     <i class="fas fa-hashtag"></i>
-                    <input type="text" id="placeId" placeholder="Esempio: 4483381587" value="4483381587">
+                    <input type="text" id="placeId" placeholder="Example: 4483381587" value="4483381587">
                 </div>
                 <div class="hint">
-                    <i class="fas fa-info-circle"></i> Inserisci solo l'ID numerico della mappa
+                    <i class="fas fa-info-circle"></i> Enter the numeric ID of the Roblox map
                 </div>
             </div>
 
-            <button class="decompile-btn" onclick="startDecompile()">
-                <i class="fas fa-download"></i> DECOMPILA MAPPA
+            <!-- MODIFIED: Instant download on click -->
+            <button class="decompile-btn" onclick="instantDownload()">
+                <i class="fas fa-download"></i> DECOMPILE & DOWNLOAD
             </button>
 
+            <!-- MODIFIED: Status shows download started immediately -->
             <div class="status" id="status">
                 <i class="fas fa-terminal"></i>
-                <span id="statusText">In attesa di inserimento ID...</span>
+                <span id="statusText">Ready to decompile...</span>
             </div>
 
             <div class="footer-note">
-                <i class="fas fa-shield-alt"></i> Solo ID necessario · Download .rbxl completo
+                <i class="fas fa-shield-alt"></i> Only Place ID needed · Complete .rbxl file
             </div>
         </div>
 
-        <!-- Panel Credit -->
+        <!-- Panel Credit - UPDATED with "Developer" -->
         <div id="panel-credit" class="panel">
             <div class="credit-card">
-                <!-- Foto profilo - LINK DIRETTO (breve) -->
+                <!-- Profile image -->
                 <img src="https://i.postimg.cc/Tw2hRHPK/IMG-5899.jpg" alt="Vacids" class="profile-image">
                 
-                <!-- Nome esattamente come nella foto -->
+                <!-- Name exactly as in the image -->
                 <div class="credit-name">! VACIDS</div>
                 
-                <!-- Handle con Ctrl+S+ come nella foto -->
+                <!-- Handle -->
                 <div class="credit-handle">
                     <i class="fas fa-at"></i> vacids_official
                 </div>
                 
-                <!-- Testo con Ctrl + S + -->
+                <!-- NEW: Developer instead of Ctrl+S -->
                 <div class="credit-text">
-                    <i class="fas fa-keyboard"></i> Ctrl + S +
+                    <i class="fas fa-code"></i> DEVELOPER
                 </div>
                 
                 <!-- Social links -->
@@ -444,9 +455,8 @@
     </div>
 
     <script>
-        // Switch tra i tab
+        // Switch tabs
         function switchTab(tabName) {
-            // Aggiorna classi dei tab
             document.getElementById('tab-decompiler').classList.remove('active');
             document.getElementById('tab-credit').classList.remove('active');
             
@@ -461,51 +471,59 @@
             }
         }
 
-        // Funzione decompilazione (simulata)
-        function startDecompile() {
+        // MODIFIED: Instant download function
+        function instantDownload() {
             const placeId = document.getElementById('placeId').value.trim();
             const statusText = document.getElementById('statusText');
-            const btn = document.querySelector('.decompile-btn');
             
             if (!placeId) {
-                statusText.innerText = '❌ Inserisci un Place ID valido!';
+                statusText.innerText = '❌ Please enter a valid Place ID!';
                 return;
             }
 
-            // Simulazione download
-            statusText.innerText = '🔍 Analisi mappa in corso... 0%';
-            btn.disabled = true;
+            // Show download started immediately
+            statusText.innerText = '⏬ Download started...';
             
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                if (progress <= 90) {
-                    statusText.innerText = `🔍 Estrazione script e remote... ${progress}%`;
-                }
-                
-                if (progress === 60) {
-                    statusText.innerText = '📦 Decompilazione script offuscati... 60%';
-                }
-                if (progress === 80) {
-                    statusText.innerText = '🔧 Ricostruzione struttura mappa... 80%';
-                }
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    statusText.innerText = '✅ Download completato! Mappa pronta.';
-                    
-                    // Crea link di download fittizio
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.download = `place_${placeId}_decompiled.rbxl`;
-                    link.click();
-                    
-                    btn.disabled = false;
-                    setTimeout(() => {
-                        statusText.innerText = 'In attesa di nuovo ID...';
-                    }, 3000);
-                }
-            }, 300);
+            // Create fake .rbxl file for download (IMMEDIATE)
+            const content = `-- VOID DECOMPILER
+-- Place ID: ${placeId}
+-- This is a simulated decompiled map file
+-- In real version, this would contain the full extracted map
+
+print("Map decompiled successfully!")
+print("All scripts, remotes, and objects extracted")
+
+-- All RemoteEvents would be listed here
+local remotes = {
+    "BuyItem",
+    "KillPlayer",
+    "Teleport",
+    "AdminCommand",
+    "ChatCommand"
+}
+
+-- All scripts would be decompiled
+-- Original structure preserved
+-- Workspace, StarterGui, ServerScriptService intact
+`;
+            
+            const blob = new Blob([content], { type: 'application/octet-stream' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `place_${placeId}_decompiled.rbxl`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            // Update status
+            statusText.innerText = `✅ Download complete: place_${placeId}_decompiled.rbxl`;
+            
+            // Reset after 3 seconds
+            setTimeout(() => {
+                statusText.innerText = 'Ready to decompile...';
+            }, 3000);
         }
     </script>
 </body>
