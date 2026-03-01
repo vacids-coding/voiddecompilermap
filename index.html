@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Void Decompiler · Roblox Map Extractor</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background: #0a0c12;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Sfondo cyberpunk */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(0, 30, 60, 0.3) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(0, 30, 60, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 100, 255, 0.1), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 700px;
+            margin: 20px;
+        }
+
+        /* Tab navigation */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 150, 255, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            background: rgba(10, 20, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 150, 255, 0.3);
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            color: #8a9bb5;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .tab i {
+            margin-right: 8px;
+        }
+
+        .tab.active {
+            background: #001122;
+            color: #00a6ff;
+            border-color: #00a6ff;
+            box-shadow: 0 -3px 15px rgba(0, 170, 255, 0.3);
+            text-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
+        }
+
+        /* Pannelli */
+        .panel {
+            display: none;
+            background: rgba(8, 15, 25, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 150, 255, 0.4);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 50px rgba(0, 100, 255, 0.2);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .panel.active-panel {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(0, 170, 255, 0.3);
+            padding-bottom: 20px;
+        }
+
+        .logo-icon {
+            font-size: 48px;
+            color: #00a6ff;
+            filter: drop-shadow(0 0 15px #00a6ff);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #80d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header h1 span {
+            color: #00a6ff;
+            -webkit-text-fill-color: #00a6ff;
+        }
+
+        .sub {
+            color: #8a9bb5;
+            font-size: 14px;
+        }
+
+        /* Input group */
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #b0c4de;
+        }
+
+        .input-group label i {
+            color: #00a6ff;
+            margin-right: 8px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 20, 40, 0.7);
+            border: 1px solid #1e3a5f;
+            border-radius: 16px;
+            padding: 5px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #00a6ff;
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.4);
+        }
+
+        .input-wrapper i {
+            color: #00a6ff;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 18px 0;
+            color: white;
+            font-size: 18px;
+            outline: none;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #3a506b;
+        }
+
+        .hint {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #6b7f99;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hint i {
+            color: #00a6ff;
+        }
+
+        /* Button */
+        .decompile-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #001c3d, #002856);
+            border: 1px solid #00a6ff;
+            border-radius: 40px;
+            padding: 18px;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 30px 0 20px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .decompile-btn:hover {
+            background: linear-gradient(135deg, #002856, #003c78);
+            box-shadow: 0 0 30px #00a6ff;
+            border-color: #80d4ff;
+            transform: scale(1.02);
+        }
+
+        .decompile-btn i {
+            font-size: 24px;
+            color: #00a6ff;
+        }
+
+        /* Status */
+        .status {
+            background: rgba(0, 30, 60, 0.5);
+            border-radius: 40px;
+            padding: 15px 25px;
+            margin: 20px 0;
+            border-left: 4px solid #00a6ff;
+            color: #b0c4de;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status i {
+            color: #00a6ff;
+        }
+
+        /* Credit section - COMPLETAMENTE RISCRITTA */
+        .credit-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .profile-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 4px solid #00a6ff;
+            box-shadow: 0 0 40px rgba(0, 170, 255, 0.6);
+            margin: 10px 0 25px;
+            object-fit: cover;
+            background: #0a1a2a;
+        }
+
+        .credit-name {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #00a6ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .credit-handle {
+            font-size: 28px;
+            color: #00a6ff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(0, 170, 255, 0.1);
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .credit-handle i {
+            font-size: 32px;
+        }
+
+        .credit-text {
+            font-size: 22px;
+            color: #b0c4de;
+            margin: 15px 0;
+            font-style: italic;
+            background: rgba(0, 50, 100, 0.3);
+            padding: 15px 30px;
+            border-radius: 40px;
+            border: 1px solid rgba(0, 170, 255, 0.2);
+        }
+
+        .credit-social {
+            display: flex;
+            gap: 30px;
+            margin: 30px 0 20px;
+        }
+
+        .credit-social a {
+            color: #8a9bb5;
+            font-size: 36px;
+            transition: all 0.3s ease;
+        }
+
+        .credit-social a:hover {
+            color: #00a6ff;
+            transform: scale(1.2);
+            text-shadow: 0 0 20px #00a6ff;
+        }
+
+        .footer-note {
+            margin-top: 30px;
+            color: #3a506b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 550px) {
+            .tab { padding: 10px 15px; font-size: 14px; }
+            .profile-image { width: 140px; height: 140px; }
+            .credit-name { font-size: 36px; }
+            .credit-handle { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <div class="tab active" id="tab-decompiler" onclick="switchTab('decompiler')">
+                <i class="fas fa-code"></i> DECOMPILER
+            </div>
+            <div class="tab" id="tab-credit" onclick="switchTab('credit')">
+                <i class="fas fa-crown"></i> CREDIT
+            </div>
+        </div>
+
+        <!-- Panel Decompiler -->
+        <div id="panel-decompiler" class="panel active-panel">
+            <div class="header">
+                <i class="fas fa-skull logo-icon"></i>
+                <div>
+                    <h1>VOID <span>DECOMPILER</span></h1>
+                    <div class="sub">ESTRAZIONE MAPPE ROBLOX</div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label><i class="fas fa-cube"></i> PLACE ID (obbligatorio)</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-hashtag"></i>
+                    <input type="text" id="placeId" placeholder="Esempio: 4483381587" value="4483381587">
+                </div>
+                <div class="hint">
+                    <i class="fas fa-info-circle"></i> Inserisci solo l'ID numerico della mappa
+                </div>
+            </div>
+
+            <button class="decompile-btn" onclick="startDecompile()">
+                <i class="fas fa-download"></i> DECOMPILA MAPPA
+            </button>
+
+            <div class="status" id="status">
+                <i class="fas fa-terminal"></i>
+                <span id="statusText">In attesa di inserimento ID...</span>
+            </div>
+
+            <div class="footer-note">
+                <i class="fas fa-shield-alt"></i> Solo ID necessario · Download .rbxl completo
+            </div>
+        </div>
+
+        <!-- Panel Credit -->
+        <div id="panel-credit" class="panel">
+            <div class="credit-card">
+                <!-- Foto profilo - LINK DIRETTO (breve) -->
+                <img src="https://i.postimg.cc/Tw2hRHPK/IMG-5899.jpg" alt="Vacids" class="profile-image">
+                
+                <!-- Nome esattamente come nella foto -->
+                <div class="credit-name">! VACIDS</div>
+                
+                <!-- Handle con Ctrl+S+ come nella foto -->
+                <div class="credit-handle">
+                    <i class="fas fa-at"></i> vacids_official
+                </div>
+                
+                <!-- Testo con Ctrl + S + -->
+                <div class="credit-text">
+                    <i class="fas fa-keyboard"></i> Ctrl + S +
+                </div>
+                
+                <!-- Social links -->
+                <div class="credit-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                    <a href="#"><i class="fab fa-discord"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+                
+                <div class="footer-note" style="margin-top: 20px;">
+                    <i class="fas fa-crown"></i> Creator & Founder
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Switch tra i tab
+        function switchTab(tabName) {
+            // Aggiorna classi dei tab
+            document.getElementById('tab-decompiler').classList.remove('active');
+            document.getElementById('tab-credit').classList.remove('active');
+            
+            if (tabName === 'decompiler') {
+                document.getElementById('tab-decompiler').classList.add('active');
+                document.getElementById('panel-decompiler').classList.add('active-panel');
+                document.getElementById('panel-credit').classList.remove('active-panel');
+            } else {
+                document.getElementById('tab-credit').classList.add('active');
+                document.getElementById('panel-credit').classList.add('active-panel');
+                document.getElementById('panel-decompiler').classList.remove('active-panel');
+            }
+        }
+
+        // Funzione decompilazione (simulata)
+        function startDecompile() {
+            const placeId = document.getElementById('placeId').value.trim();
+            const statusText = document.getElementById('statusText');
+            const btn = document.querySelector('.decompile-btn');
+            
+            if (!placeId) {
+                statusText.innerText = '❌ Inserisci un Place ID valido!';
+                return;
+            }
+
+            // Simulazione download
+            statusText.innerText = '🔍 Analisi mappa in corso... 0%';
+            btn.disabled = true;
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                if (progress <= 90) {
+                    statusText.innerText = `🔍 Estrazione script e remote... ${progress}%`;
+                }
+                
+                if (progress === 60) {
+                    statusText.innerText = '📦 Decompilazione script offuscati... 60%';
+                }
+                if (progress === 80) {
+                    statusText.innerText = '🔧 Ricostruzione struttura mappa... 80%';
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    statusText.innerText = '✅ Download completato! Mappa pronta.';
+                    
+                    // Crea link di download fittizio
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.download = `place_${placeId}_decompiled.rbxl`;
+                    link.click();
+                    
+                    btn.disabled = false;
+                    setTimeout(() => {
+                        statusText.innerText = 'In attesa di nuovo ID...';
+                    }, 3000);
+                }
+            }, 300);
+        }
+    </script>
+</body>
+</html>
